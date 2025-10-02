@@ -1,13 +1,8 @@
-CUDA Path Tracer
-================
+# University of Pennsylvania, CIS 5650: GPU Programming and Architecture
+## Project 3 - CUDA Path Tracer
 
-**University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 3**
+* Zwe Tun
+  * LinkedIn: https://www.linkedin.com/in/zwe-tun-6b7191256/
+* Tested on: Intel(R) i7-14700HX, 2100 Mhz, RTX 5060 Laptop
 
-* (TODO) YOUR NAME HERE
-* Tested on: (TODO) Windows 22, i7-2222 @ 2.22GHz 22GB, GTX 222 222MB (Moore 2222 Lab)
-
-### (TODO: Your README)
-
-*DO NOT* leave the README to the last minute! It is a crucial part of the
-project, and we will not be able to grade you without a good README.
-
+## Overview 
