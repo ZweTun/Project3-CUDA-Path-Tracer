@@ -54,5 +54,15 @@ __host__ __device__ void refractRay(
     const Material& m,
 	thrust::default_random_engine& rng);
 
+__host__ __device__ void directLighting(
+    PathSegment& pathSegment,
+    glm::vec3 hitPoint,
+    glm::vec3 surfNormal,
+    const Material& mat,
+    const Geom* lights,
+    const Material* materials,
+    int numberOfLights,
+    thrust::default_random_engine& rng, Geom* geoms, int sceneGeomCount);
+
 
 

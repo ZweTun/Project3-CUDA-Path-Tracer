@@ -2,11 +2,17 @@
 
 #include <cstdio>
 #include <cuda.h>
+#include <cuda_runtime.h>
+
 #include <cmath>
 #include <thrust/execution_policy.h>
 #include <thrust/random.h>
 #include <thrust/remove.h>
 #include <thrust/partition.h>
+
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
+#include <thrust/scan.h>
 
 
 #include "sceneStructs.h"
@@ -82,6 +88,9 @@ static Geom* dev_geoms = NULL;
 static Material* dev_materials = NULL;
 static PathSegment* dev_paths = NULL;
 static ShadeableIntersection* dev_intersections = NULL;
+static Geom* dev_lights = NULL; 
+int numLights = 0;
+
 // TODO: static variables for device memory, any extra info you need, etc
 // ...
 
@@ -112,7 +121,9 @@ void pathtraceInit(Scene* scene)
     cudaMemset(dev_intersections, 0, pixelcount * sizeof(ShadeableIntersection));
 
     // TODO: initialize any extra device memeory you need
-
+    cudaMalloc(&dev_lights, scene->lights.size() * sizeof(Geom));
+    cudaMemcpy(dev_lights, scene->lights.data(), scene->lights.size() * sizeof(Geom), cudaMemcpyHostToDevice);
+    numLights = scene->lights.size();
     checkCUDAError("pathtraceInit");
 }
 
@@ -126,6 +137,30 @@ void pathtraceFree()
     // TODO: clean up any extra device memory you created
 
     checkCUDAError("pathtraceFree");
+}
+
+// Concentric disk sampling adapted from pbr-book.org
+__host__ __device__ glm::vec2 sampleUnifromDiskConcentric(float u1, float u2) {
+   
+    glm::vec2 uOffset = glm::vec2(2.0f * u1 - 1.0f, 2.0f * u2 - 1.0f);
+    if (fabsf(uOffset.x) == 0 && fabsf(uOffset.y) == 0)
+        return glm::vec2(0.0f, 0.0f);
+
+    // Apply concentric mapping
+    float r, theta;
+    const float PiOver4 = glm::pi<float>() * 0.25f;
+    const float PiOver2 = glm::pi<float>() * 0.5f;
+
+    if (fabsf(uOffset.x) > fabsf(uOffset.y)) {
+        r = uOffset.x;
+        theta = PiOver4 * (uOffset.y / uOffset.x);
+    }
+    else {
+        r = uOffset.y;
+        theta = PiOver2 - PiOver4 * (uOffset.x / uOffset.y);
+    }
+    return r * glm::vec2(cosf(theta), sinf(theta));
+
 }
 
 /**
@@ -145,35 +180,58 @@ __global__ void generateRayFromCamera(Camera cam, int iter, int traceDepth, Path
         int index = x + (y * cam.resolution.x);
         PathSegment& segment = pathSegments[index];
 
+        
         segment.ray.origin = cam.position;
         segment.color = glm::vec3(1.0f, 1.0f, 1.0f);
         segment.pixelIndex = index;
         segment.remainingBounces = traceDepth;
+        segment.accumulated = glm::vec3(0.0f);
+     
       
         // TODO: implement antialiasing by jittering the ray
 		// Stocastic sampling setup
-       
-
         thrust::default_random_engine rng = makeSeededRandomEngine(iter, index, segment.remainingBounces);
         thrust::uniform_real_distribution<float> u01(0, 1);
- /*       segment.ray.direction = glm::normalize(cam.view
-            - cam.right * cam.pixelLength.x * ((float)x - (float)cam.resolution.x * 0.5f)
-            - cam.up * cam.pixelLength.y * ((float)y - (float)cam.resolution.y * 0.5f)
-        );*/
 
 		// Jittered for antialiasing random sampling
         float randX = (float)x + u01(rng);
-		float randY = (float)y + u01(rng);
-
-        segment.ray.direction = glm::normalize(cam.view
+        float randY = (float)y + u01(rng);
+        glm::vec3 camDir = glm::normalize(cam.view
             - cam.right * cam.pixelLength.x * (randX - (float)cam.resolution.x * 0.5f)
             - cam.up * cam.pixelLength.y * (randY - (float)cam.resolution.y * 0.5f)
 		);
 
 
-        
+		//Camera lens effect for depth of field
+        if (cam.lensRadius > 0.0f) {
+			//1) sample point on lens
+            float u1 = u01(rng);
+            float u2 = u01(rng);
+            
+            glm::vec2 lensSample = sampleUnifromDiskConcentric(u1, u2) * cam.lensRadius;
+            glm::vec3 pLens = cam.right * lensSample.x + cam.up * lensSample.y;
 
-   
+			//2) compute point on focal plane
+            float cosDir = glm::dot(camDir, cam.view);
+            float ft = cam.focalDistance / cosDir;
+            glm::vec3 pFocus = cam.position + camDir * ft;
+
+			//3) update ray for effect of lens
+            glm::vec3 newOrigin = cam.position + pLens;
+            glm::vec3 newDir = glm::normalize(pFocus - newOrigin);
+
+            segment.ray.origin = newOrigin;
+            segment.ray.direction = newDir;
+        }
+        else {
+          
+            segment.ray.origin = cam.position;
+            segment.ray.direction = camDir;
+     
+        }
+
+
+       
     
     }
 }
@@ -221,9 +279,7 @@ __global__ void computeIntersections(
             {
                 t = sphereIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside);
             }
-            else if (geom.type == TRIANGLE) {
-                t = triangleIntersectionTest(geom, pathSegment.ray, tmp_intersect, tmp_normal, outside);
-            }
+      
             // TODO: add more intersection tests here... triangle? metaball? CSG?
 
             // Compute the minimum t from the intersection tests to determine what
@@ -254,6 +310,7 @@ __global__ void computeIntersections(
     }
 }
 
+
 // LOOK: "fake" shader demonstrating what you might do with the info in
 // a ShadeableIntersection, as well as how to use thrust's random number
 // generator. Observe that since the thrust random number generator basically
@@ -269,7 +326,7 @@ __global__ void shadeFakeMaterial(
     int num_paths,
     ShadeableIntersection* shadeableIntersections,
     PathSegment* pathSegments,
-    Material* materials, int traceDepth)
+    Material* materials, int traceDepth, Geom* lights, int numLights, Geom* geoms, int sceneGeomCount)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < num_paths)
@@ -290,10 +347,16 @@ __global__ void shadeFakeMaterial(
             
             // If the material indicates that the object was a light, "light" the ray
             if (material.emittance > 0.0f) {
-
-              
-                pathSegments[idx].color *= (materialColor * material.emittance);
+                pathSegments[idx].accumulated += pathSegments[idx].color * (material.color * material.emittance);
+       
+                
+                pathSegments[idx].color *= glm::vec3(0.0f);
                 pathSegments[idx].remainingBounces = 0;
+
+        
+                return; 
+
+
   
             }
             // Otherwise, do some pseudo-lighting computation. This is actually more
@@ -302,34 +365,56 @@ __global__ void shadeFakeMaterial(
             else {
 
 
-                
-          
-            
 
 				//Lambertian diffuse
 				glm::vec3 intersect = pathSegments[idx].ray.origin + intersection.t * pathSegments[idx].ray.direction;
+                
+                directLighting(
+                    pathSegments[idx],      
+                    intersect,
+                    intersection.surfaceNormal,
+                    material,                 
+                    lights,            
+                    materials,          
+                    numLights,
+                    rng, geoms, sceneGeomCount);
 
-				bool refract = true;
-                if (refract) {
-                    scatterRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng);
-                } else {
+                
+				// Scatter or Refract
+                if (material.hasRefractive > 0.5f) {
                     refractRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng);
                 }
+                else if (material.hasReflective > 0.5) {
+                    pathSegments[idx].ray.direction = glm::reflect(glm::normalize(pathSegments[idx].ray.direction), intersection.surfaceNormal);
+                    pathSegments[idx].ray.origin = intersect + pathSegments[idx].ray.direction + 0.001f; 
+                    pathSegments[idx].color *= material.color;
+
+                } else {
+                    // pure diffuse
+                    scatterRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng);
+                }
+
                 pathSegments[idx].remainingBounces--;
 
+
+				// Russian Roulette Termination 
                 bool russianRoulette = true;
-				if (russianRoulette && traceDepth - pathSegments[idx].remainingBounces > 2) {
-                    float p = glm::clamp(glm::max(materialColor.r, glm::max(materialColor.g, materialColor.b)), 0.1f, 1.0f);
-
-                    if (u01(rng) > p) {
+                glm::vec3 col = pathSegments[idx].color;
+        
+            
+                float maxComp = glm::max(col.r, glm::max(col.g, col.b));
+                if (russianRoulette && maxComp < 1.0f && (traceDepth - pathSegments[idx].remainingBounces) > 2) {
+                    float q = fmaxf(0, 1.0f - maxComp); 
+                    float u = u01(rng); 
+                    if (u < q) {
+                   
                         pathSegments[idx].remainingBounces = 0;
-                        pathSegments[idx].color = glm::vec3(0.0f);
-
                     }
                     else {
-                        pathSegments[idx].color /= p;
+                        pathSegments[idx].color = pathSegments[idx].color / (1.0f - q);
                     }
                 }
+
                
 
             }
@@ -355,8 +440,11 @@ __global__ void finalGather(int nPaths, glm::vec3* image, PathSegment* iteration
     if (index < nPaths)
     {
         PathSegment iterationPath = iterationPaths[index];
-        image[iterationPath.pixelIndex] += iterationPath.color;
+        image[iterationPath.pixelIndex] += iterationPath.accumulated;
 		iterationPath.color = glm::vec3(0.0f);
+
+
+
     }
 }
 
@@ -378,14 +466,6 @@ struct materialSorter
 };
 
 
-void initOctree(Geom* geoms, int geoms_size) {
-
-
-
-}
-
-
-
 
 
 /**
@@ -397,7 +477,7 @@ void pathtrace(uchar4* pbo, int frame, int iter)
     const int traceDepth = hst_scene->state.traceDepth;
     const Camera& cam = hst_scene->state.camera;
     const int pixelcount = cam.resolution.x * cam.resolution.y;
-
+ 
     // 2D block for generating ray from camera
     const dim3 blockSize2d(8, 8);
     const dim3 blocksPerGrid2d(
@@ -444,6 +524,10 @@ void pathtrace(uchar4* pbo, int frame, int iter)
     int depth = 0;
     PathSegment* dev_path_end = dev_paths + pixelcount;
     int num_paths = pixelcount;
+    
+
+
+    
 
     // --- PathSegment Tracing Stage ---
     // Shoot ray into scene, bounce between objects, push shading chunks
@@ -479,28 +563,28 @@ void pathtrace(uchar4* pbo, int frame, int iter)
         // materials you have in the scenefile.
         // TODO: compare between directly shading the path segments and shading
         // path segments that have been reshuffled to be contiguous in memory.
-            //Stream compaction to remove paths that have terminated
+        //Stream compaction to remove paths that have terminated
 
 
-		bool toggle = false; // set to true to enable material sorting
+        bool toggle = true; // set to true to enable material sorting
         if (toggle) {
             thrust::sort_by_key(thrust::device, dev_intersections, dev_intersections + num_paths, dev_paths, materialSorter{});
-		
-        }   
+
+        }
+        numLights = hst_scene->lights.size(); 
 
 
-        // 3rd thing to do
         shadeFakeMaterial << <numblocksPathSegmentTracing, blockSize1d >> > (
             iter,
             num_paths,
             dev_intersections,
             dev_paths,
-            dev_materials, traceDepth
+            dev_materials, traceDepth, dev_lights, numLights, dev_geoms,
+            hst_scene->geoms.size()
             );
 
 
-      
-
+  
 
 		//Stream compaction to remove terminated paths
         auto newPath = thrust::partition(thrust::device, dev_paths, dev_paths + num_paths, isPathTerminated{});

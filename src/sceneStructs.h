@@ -12,8 +12,7 @@
 enum GeomType
 {
     SPHERE,
-    CUBE,
-    TRIANGLE
+    CUBE
 };
 
 struct Ray
@@ -33,6 +32,8 @@ struct Geom
     glm::mat4 inverseTransform;
     glm::mat4 invTranspose;
 };
+
+
 
 struct Material
 {
@@ -58,6 +59,9 @@ struct Camera
     glm::vec3 right;
     glm::vec2 fov;
     glm::vec2 pixelLength;
+    float lensRadius;
+    float focalDistance;
+    
 };
 
 struct RenderState
@@ -75,6 +79,7 @@ struct PathSegment
     glm::vec3 color;
     int pixelIndex;
     int remainingBounces;
+    glm::vec3 accumulated; 
 };
 
 // Use with a corresponding PathSegment to do:

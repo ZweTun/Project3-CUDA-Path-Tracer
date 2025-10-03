@@ -112,24 +112,3 @@ __host__ __device__ float sphereIntersectionTest(
     return glm::length(r.origin - intersectionPoint);
 }
 
-
-
-__host__ __device__ float triangleIntersectionTest(
-    Geom box,
-    Ray r,
-    glm::vec3& intersectionPoint,
-    glm::vec3& normal,
-    bool& outside)
-{
-    Ray q;
-    q.origin = multiplyMV(box.inverseTransform, glm::vec4(r.origin, 1.0f));
-    q.direction = glm::normalize(multiplyMV(box.inverseTransform, glm::vec4(r.direction, 0.0f)));
-    
-
-    return NULL; 
-
-
-
-}
-
-

@@ -43,6 +43,15 @@ void Scene::loadFromJSON(const std::string& jsonName)
         const auto& p = item.value();
         Material newMaterial{};
         // TODO: handle materials loading differently
+        newMaterial.color = glm::vec3(1.0f);
+        newMaterial.specular.exponent = 0.0f;
+        newMaterial.specular.color = glm::vec3(1.0f);
+        newMaterial.hasReflective = 0.0f;
+        newMaterial.hasRefractive = 0.0f;
+        newMaterial.indexOfRefraction = 1.0f;
+        newMaterial.emittance = 0.0f;
+
+
         if (p["TYPE"] == "Diffuse")
         {
             const auto& col = p["RGB"];
@@ -58,15 +67,28 @@ void Scene::loadFromJSON(const std::string& jsonName)
         {
             const auto& col = p["RGB"];
             newMaterial.color = glm::vec3(col[0], col[1], col[2]);
-        }
+            newMaterial.hasReflective = 1.0f;
+			//newMaterial.specular.exponent = p["EXponent"];
+            newMaterial.specular.color = newMaterial.color;
+
+        } else if (p["TYPE"] == "Refractive")
+        {
+            const auto& col = p["RGB"];
+            newMaterial.color = glm::vec3(col[0], col[1], col[2]);
+            newMaterial.hasRefractive = 1.0f;
+			newMaterial.indexOfRefraction = p["IOR"];
+
+		}
         MatNameToID[name] = materials.size();
         materials.emplace_back(newMaterial);
+
     }
     const auto& objectsData = data["Objects"];
     for (const auto& p : objectsData)
     {
         const auto& type = p["TYPE"];
         Geom newGeom;
+
         if (type == "cube")
         {
             newGeom.type = CUBE;
@@ -74,6 +96,7 @@ void Scene::loadFromJSON(const std::string& jsonName)
         else
         {
             newGeom.type = SPHERE;
+            
         }
         newGeom.materialid = MatNameToID[p["MATERIAL"]];
         const auto& trans = p["TRANS"];
@@ -88,6 +111,11 @@ void Scene::loadFromJSON(const std::string& jsonName)
         newGeom.invTranspose = glm::inverseTranspose(newGeom.transform);
 
         geoms.push_back(newGeom);
+
+        if (p["MATERIAL"] == "light") {
+            lights.push_back(newGeom);
+       
+        }
     }
     const auto& cameraData = data["Camera"];
     Camera& camera = state.camera;
@@ -121,4 +149,8 @@ void Scene::loadFromJSON(const std::string& jsonName)
     int arraylen = camera.resolution.x * camera.resolution.y;
     state.image.resize(arraylen);
     std::fill(state.image.begin(), state.image.end(), glm::vec3());
+
+    camera.focalDistance = glm::length(camera.lookAt - camera.position);
+    camera.lensRadius = 0.0f;
+
 }
