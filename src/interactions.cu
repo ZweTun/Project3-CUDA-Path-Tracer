@@ -44,6 +44,7 @@ __host__ __device__ glm::vec3 calculateRandomDirectionInHemisphere(
         + sin(around) * over * perpendicularDirection2;
 }
 
+//Direct cube based lighting 
 __host__ __device__ void directLighting(
     PathSegment& pathSegment,
     glm::vec3 hitPoint,
@@ -65,10 +66,10 @@ __host__ __device__ void directLighting(
     glm::vec3 throughput = Lmat.color * Lmat.emittance;               
 
     // 2) sample a face 
-    float rFace = thrust::uniform_real_distribution<float>(0.0f, 1.0f)(rng);
+    float u01 = thrust::uniform_real_distribution<float>(0.0f, 1.0f)(rng);
     float u = thrust::uniform_real_distribution<float>(0.0f, 1.0f)(rng);
     float v = thrust::uniform_real_distribution<float>(0.0f, 1.0f)(rng);
-    int face = glm::clamp(int(rFace * 6.0f), 0, 5);
+    int face = glm::clamp(int(u01 * 6.0f), 0, 5);
 
 
     //Cube geometry face select
@@ -105,7 +106,7 @@ __host__ __device__ void directLighting(
         nL = glm::vec3(0, 0, 1);
         area = 1.0f / ((xmax - xmin) * (ymax - ymin));
     }
-    else { // face == 5 or any other unexpected value
+    else { 
         pL = glm::vec3(xmin + u * (xmax - xmin), ymin + v * (ymax - ymin), zmin);
         nL = glm::vec3(0, 0, -1);
         area = 1.0f / ((xmax - xmin) * (ymax - ymin));
@@ -151,6 +152,8 @@ __host__ __device__ float schlicksApprox(float cosTheta, float n1, float n2) {
     return R0 + (1.0f - R0) * powf(1.0f - cos, 5.0f);
 }
 
+
+//Refract ray using schlick approx for snell's law
 __host__ __device__ void refractRay(
     PathSegment& pathSegment,
     glm::vec3 intersect,
