@@ -150,6 +150,8 @@ void Scene::loadFromJSON(const std::string& jsonName)
     state.image.resize(arraylen);
     std::fill(state.image.begin(), state.image.end(), glm::vec3());
 
+
+    //Change DOF here
     camera.focalDistance = glm::length(camera.lookAt - camera.position);
     camera.lensRadius = 0.0f;
 

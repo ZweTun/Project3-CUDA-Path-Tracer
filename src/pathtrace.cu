@@ -380,7 +380,7 @@ __global__ void shadeFakeMaterial(
                     rng, geoms, sceneGeomCount);
 
                 
-				// Scatter or Refract
+				// Scatter or Refract or Reflect
                 if (material.hasRefractive > 0.5f) {
                     refractRay(pathSegments[idx], intersect, intersection.surfaceNormal, material, rng);
                 }

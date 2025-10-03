@@ -144,6 +144,8 @@ __host__ __device__ void directLighting(
  
 }
 
+
+//schlicks approx for frensel affects 
 __host__ __device__ float schlicksApprox(float cosTheta, float n1, float n2) {
 
     float base = (n1 - n2) / (n1 + n2);
@@ -153,7 +155,7 @@ __host__ __device__ float schlicksApprox(float cosTheta, float n1, float n2) {
 }
 
 
-//Refract ray using schlick approx for snell's law
+//Refract ray using schlick approx  
 __host__ __device__ void refractRay(
     PathSegment& pathSegment,
     glm::vec3 intersect,
