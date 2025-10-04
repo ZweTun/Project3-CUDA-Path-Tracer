@@ -11,10 +11,14 @@ Path tracing is a rendering technique that produces realistic images by simulati
 
 ## Core Features
 Cosine-weighted Diffuse Scatter BRDF
+
 Contiguous Material Type Memory
+
 Stream Compaction
+
 Stochastic Sampled Antialiasing
 
+![PATH TRACER](img/cornell.png)
 
 
 
