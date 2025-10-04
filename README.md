@@ -9,6 +9,15 @@
 Path tracing is a rendering technique that produces realistic images by simulating how light travels through a scene. Instead of just tracing rays directly to light sources, it sends rays from the camera that bounce around surfaces, picking up color and brightness based on the material they hit. The downside is that the images start out noisy since the method relies on randomness, but with enough samples the noise fades and the image converges to a natural, physically accurate result.
 
 
+## Core Features
+Cosine-weighted Diffuse Scatter BRDF
+Contiguous Material Type Memory
+Stream Compaction
+Stochastic Sampled Antialiasing
+
+
+
+
 ## Resources 
 https://www.cg.tuwien.ac.at/sites/default/files/course/4411/attachments/04_path_tracing.pdf
 https://www.scratchapixel.com/lessons/3d-basic-rendering/global-illumination-path-tracing/global-illumination-path-tracing-practical-implementation.html
