@@ -26,6 +26,8 @@ Stochastic Sampled Antialiasing
 
 To achieve realistic glass and Fresnel effects in rendering, both Snell’s Law and total internal reflection (TIR) are applied. The process begins by calculating the angle of incidence using the dot product between the incoming ray and the surface normal. The material’s index of refraction (IOR) determines how much light bends as it enters or exits the medium. Using this value, we can check whether the ray undergoes total internal reflection, where all light is reflected rather than transmitted. To estimate the ratio of reflected to refracted light, Schlick’s approximation is applied and compared against a random uniform number generator to select reflection or refraction. Finally, Snell’s Law is used to compute the precise direction of the refracted ray as it passes through the surface.
 
+![PATH TRACER](img/refract.png)
+
 ### Physically-based depth-of-field
 
 To simulate realistic camera depth of field, we jitter rays within a circular aperture to mimic how real lenses focus light. First, we determine the focal distance between the camera and the subject. Using the lens radius, we then sample a random point on the lens surface using a uniform random number generator. Next, we compute the corresponding focus point on the focal plane, ensuring all rays passing through the sampled lens point converge at this focus. By offsetting the ray’s origin to the sampled lens position and adjusting its direction toward the focus point, we create the appearance of blurred backgrounds and foregrounds. The lens radius controls the strength of this effect larger radii produce shallower depth of field (more blur), while smaller radii keep more of the scene in focus.
