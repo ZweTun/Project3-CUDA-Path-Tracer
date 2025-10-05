@@ -99,9 +99,25 @@ Not all rays contribute equally to the final rendered image, so we can terminate
 
 As we can see, after applying Russian Roulette, our frame rate increased by approximately 20%, improving from 2.9 FPS to about 3.5 FPS.
 
-### Performance Analysis 
+## Performance Analysis 
+### Stream Compaction
+Stream compaction removes terminated rays from the active path list, reducing the number of rays traced in subsequent bounces. To see exactly how many rays are alive after each depth I recorded it and plotted it below. Note this is for an open cornell scene with core path tracer. 
 
 
+As we can see the number of active rays decreases steadily with each bounce. By bounce 7, all rays have terminated, and early bounces remove the largest number of rays, so performing compaction after the first few bounces provides the largest performance benefit. Later bounces remove fewer rays, meaning that performing compaction too late has less impact and can even introduce overhead. 
+
+
+
+
+
+
+To compare between open and close scenes I perfomed compaction every N bounces (depth % N == 0). I tested performing compaction after every 1, 2, …, 8 bounces and measured the FPS. Note 0 bounce is our baseline with no stream compaction at all. 
+
+
+
+
+From the graph we can see that in open scenes, FPS is higher when compaction is done more frequently (N small), because terminated rays are removed early and the GPU has fewer rays to trace in later iterations. FPS steadily decreases as N increases, showing diminishing returns when compaction is applied less frequently.
+In closed scenes, FPS changes minimally because most rays survive until the maximum depth. Compaction has little effect, and performing it less frequently has almost no benefit.
 
 
 
