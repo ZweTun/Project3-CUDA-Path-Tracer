@@ -39,7 +39,7 @@ To simulate realistic camera depth of field, we jitter rays within a circular ap
 *Before DOF*
 
 
-
+&nbsp;
 
 
 ![PATH TRACER](img/DOF.png)
