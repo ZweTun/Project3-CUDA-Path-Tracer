@@ -75,7 +75,7 @@ Not all rays contribute equally to the final rendered image, so we can terminate
 
 *After Russian Roulette*
 
-As we can see, after applying Russian Roulette, our frame rate increased by approximately 17%, improving from 3 FPS to about 3.5 FPS.
+As we can see, after applying Russian Roulette, our frame rate increased by approximately 20%, improving from 2.9 FPS to about 3.5 FPS.
 
 ## Resources 
 https://www.cg.tuwien.ac.at/sites/default/files/course/4411/attachments/04_path_tracing.pdf
