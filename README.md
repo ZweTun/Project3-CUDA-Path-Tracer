@@ -26,6 +26,8 @@ Stochastic Sampled Antialiasing
 
 To achieve realistic glass and Fresnel effects in rendering, both Snell’s Law and total internal reflection (TIR) are applied. The process begins by calculating the angle of incidence using the dot product between the incoming ray and the surface normal. The material’s index of refraction (IOR) determines how much light bends as it enters or exits the medium. Using this value, we can check whether the ray undergoes total internal reflection, where all light is reflected rather than transmitted. To estimate the ratio of reflected to refracted light, Schlick’s approximation is applied and compared against a random uniform number generator to select reflection or refraction. Finally, Snell’s Law is used to compute the precise direction of the refracted ray as it passes through the surface.
 
+Refraction is more expensive than simple BSDF scattering since it must compute reflection and refraction using Snell’s Law and Schlick’s approximation. A CPU version would perform worse, as these calculations benefit from GPU parallelism. Running them one ray at a time would be inefficient. To improve performance and reduce the noticeable noise and bright “firefly” artifacts future work could use better sampling and clamp bright samples. 
+
 ![PATH TRACER](img/refract.png)
 
 ### Physically-based depth-of-field
@@ -100,6 +102,9 @@ As we can see, after applying Russian Roulette, our frame rate increased by appr
 
 ## Resources 
 https://www.cg.tuwien.ac.at/sites/default/files/course/4411/attachments/04_path_tracing.pdf
+
 https://www.scratchapixel.com/lessons/3d-basic-rendering/global-illumination-path-tracing/global-illumination-path-tracing-practical-implementation.html
+
 [PBRTv3] Physically Based Rendering: From Theory to Implementation (pbr-book.org)
+
 [PBRTv4] Physically Based Rendering: From Theory to Implementation (pbr-book.org)
