@@ -117,9 +117,9 @@ As we can see the number of active rays decreases steadily with each bounce. By 
 &nbsp;
 &nbsp;
 
+### Open Scene vs Closed Scene
 
-
-To compare between open and close scenes I perfomed compaction every N bounces (depth % N == 0). I tested performing compaction after every 1, 2, n bounces and measured the FPS. Note 0 bounce is our baseline with no stream compaction at all. 
+To compare between open and closed scenes I perfomed compaction every N bounces (depth % N == 0). I tested performing compaction after every 1, 2, n bounces and measured the FPS. Note 0 bounce is our baseline with no stream compaction at all and tested with core path tracer. 
 
 
 ![PATH TRACER](img/graph2.png)
