@@ -77,8 +77,12 @@ Not all rays contribute equally to the final rendered image, so we can terminate
 
 As we can see, after applying Russian Roulette, our frame rate increased by approximately 20%, improving from 2.9 FPS to about 3.5 FPS.
 
+### Performance Analysis 
+
+### Bloopers
+
 ## Resources 
 https://www.cg.tuwien.ac.at/sites/default/files/course/4411/attachments/04_path_tracing.pdf
 https://www.scratchapixel.com/lessons/3d-basic-rendering/global-illumination-path-tracing/global-illumination-path-tracing-practical-implementation.html
-https://pbr-book.org/3ed-2018/Monte_Carlo_Integration/Russian_Roulette_and_Splitting
-https://pbr-book.org/4ed/Reflection_Models/Specular_Reflection_and_Transmission
+[PBRTv3] Physically Based Rendering: From Theory to Implementation (pbr-book.org)
+[PBRTv4] Physically Based Rendering: From Theory to Implementation (pbr-book.org)
