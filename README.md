@@ -32,6 +32,12 @@ To achieve realistic glass and Fresnel effects in rendering, both Snell’s Law 
 
 To simulate realistic camera depth of field, we jitter rays within a circular aperture to mimic how real lenses focus light. First, we determine the focal distance between the camera and the subject. Using the lens radius, we then sample a random point on the lens surface using a uniform random number generator. Next, we compute the corresponding focus point on the focal plane, ensuring all rays passing through the sampled lens point converge at this focus. By offsetting the ray’s origin to the sampled lens position and adjusting its direction toward the focus point, we create the appearance of blurred backgrounds and foregrounds. The lens radius controls the strength of this effect larger radii produce shallower depth of field (more blur), while smaller radii keep more of the scene in focus.
 
+*Before DOF*
+
+![PATH TRACER](img/DOF.png)
+![PATH TRACER](img/DOF1.png)
+*After DOF* 
+
 ### Direct lighting
 
 In our core path tracer, rays are traced from the camera into the scene and followed as they bounce until eventually reaching an emissive surface, such as a lamp or ceiling light. Direct lighting enhances this process by allowing rays to explicitly sample light sources instead of relying solely on random bounces to reach them. At each surface intersection, the renderer generates a shadow ray toward the light source to check if the path is unobstructed. If the shadow ray reaches the light without being blocked, that point receives direct illumination. This technique greatly improves realism and reduces noise by efficiently capturing the primary lighting contribution from visible light sources.
