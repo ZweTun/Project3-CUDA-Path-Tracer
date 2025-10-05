@@ -52,13 +52,30 @@ To simulate realistic camera depth of field, we jitter rays within a circular ap
 
 In our core path tracer, rays are traced from the camera into the scene and followed as they bounce until eventually reaching an emissive surface, such as a lamp or ceiling light. Direct lighting enhances this process by allowing rays to explicitly sample light sources instead of relying solely on random bounces to reach them. At each surface intersection, the renderer generates a shadow ray toward the light source to check if the path is unobstructed. If the shadow ray reaches the light without being blocked, that point receives direct illumination. This technique greatly improves realism and reduces noise by efficiently capturing the primary lighting contribution from visible light sources.
 
+![PATH TRACER](img/DL.png)
+
+
 ## Performance Improvements 
 
 
-### Russian Roullete 
+### Russian Roulette 
 
 Not all rays contribute equally to the final rendered image, so we can terminate certain rays early to save computation. This is especially useful for rays with low energy that have lost most of their contribution after multiple bounces. We use a uniform random number generator to probabilistically decide whether a ray should be terminated by setting its remaining bounces to zero. To preserve the accuracy of primary lighting, Russian Roulette is only applied after the first two bounces, as early bounces are typically more important for scene illumination. If a ray survives this probabilistic test, its color is scaled down to maintain energy conservation and to increase the chance of termination in subsequent iterations. This technique reduces computational cost while keeping the rendered result unbiased.
 
+![PATH TRACER](img/noRR.png)
+
+*Before Russian Roulette*
+
+
+&nbsp;
+&nbsp;
+
+
+![PATH TRACER](img/RR.png)
+
+*After Russian Roulette*
+
+As we can see, after applying Russian Roulette, our frame rate increased by approximately 17%, improving from 3 FPS to about 3.5 FPS.
 
 ## Resources 
 https://www.cg.tuwien.ac.at/sites/default/files/course/4411/attachments/04_path_tracing.pdf
