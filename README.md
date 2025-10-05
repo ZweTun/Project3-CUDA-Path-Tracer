@@ -34,6 +34,7 @@ Refraction is more expensive than simple BSDF scattering since it must compute r
 
 To simulate realistic camera depth of field, we jitter rays within a circular aperture to mimic how real lenses focus light. First, we determine the focal distance between the camera and the subject. Using the lens radius, we then sample a random point on the lens surface using a uniform random number generator. Next, we compute the corresponding focus point on the focal plane, ensuring all rays passing through the sampled lens point converge at this focus. By offsetting the ray’s origin to the sampled lens position and adjusting its direction toward the focus point, we create the appearance of blurred backgrounds and foregrounds. The lens radius controls the strength of this effect larger radii produce shallower depth of field (more blur), while smaller radii keep more of the scene in focus.
 
+The performance impact of this feature was minimal, as the additional ray jitter and focal calculations are lightweight compared to overall path tracing operations. There was no significant change in FPS. In terms of a CPU version, it would perform worse since the random lens sampling per ray benefits from GPU parallelism. In the future there could be support for variable aperture shapes. Currently the implementation only supports a circular thin lens model. 
 
 
 ![PATH TRACER](img/noDOF.png)
