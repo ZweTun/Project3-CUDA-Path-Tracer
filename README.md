@@ -135,6 +135,11 @@ In conclusion, performing no stream compaction results in the worst performance 
 
 
 ### Bloopers
+![PATH TRACER](img/blooper1.png)
+![PATH TRACER](img/blooper2.png)
+![PATH TRACER](img/blooper3.png)
+![PATH TRACER](img/blooper4.png)
+
 
 ## Resources 
 https://www.cg.tuwien.ac.at/sites/default/files/course/4411/attachments/04_path_tracing.pdf
