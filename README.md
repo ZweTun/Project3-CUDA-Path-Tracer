@@ -20,6 +20,8 @@ Stochastic Sampled Antialiasing
 
 ![PATH TRACER](img/cornell.png)
 
+![PATH TRACER](img/enclosed.png)
+
 ## Visual Improvements
 
 ### Refraction
@@ -98,6 +100,12 @@ Not all rays contribute equally to the final rendered image, so we can terminate
 As we can see, after applying Russian Roulette, our frame rate increased by approximately 20%, improving from 2.9 FPS to about 3.5 FPS.
 
 ### Performance Analysis 
+
+
+
+
+
+
 
 ### Bloopers
 
