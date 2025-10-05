@@ -52,7 +52,19 @@ To simulate realistic camera depth of field, we jitter rays within a circular ap
 
 In our core path tracer, rays are traced from the camera into the scene and followed as they bounce until eventually reaching an emissive surface, such as a lamp or ceiling light. Direct lighting enhances this process by allowing rays to explicitly sample light sources instead of relying solely on random bounces to reach them. At each surface intersection, the renderer generates a shadow ray toward the light source to check if the path is unobstructed. If the shadow ray reaches the light without being blocked, that point receives direct illumination. This technique greatly improves realism and reduces noise by efficiently capturing the primary lighting contribution from visible light sources.
 
+After implementing direct lighting, the frame rate decreased from 4.3 FPS to 3.5 FPS, representing roughly a 19% drop in performance. This slowdown occurs because each surface interaction now spawns an additional shadow ray, effectively increasing the total number of ray–scene intersection tests per frame
+
+If implemented on a CPU, performance would suffer even more, as CPU are not optimized to handle multiple paraellel computations unlike the GPU. 
+
+Future optimizations could include light sampling heuristics to limit the number of shadow rays per bounce, or sampling based on light intensity. These improvements could help regain performance while preserving the accuracy and realism of the lighting.
+
+![PATH TRACER](img/cornell.png)
+
+*Before Direct Lighting*
+
 ![PATH TRACER](img/DL.png)
+
+*After Direct Lighting*
 
 
 ## Performance Improvements 
