@@ -124,7 +124,9 @@ To compare between open and close scenes I perfomed compaction every N bounces (
 
 
 From the graph we can see that in open scenes, FPS is higher when compaction is done more frequently (N small), because terminated rays are removed early and the GPU has fewer rays to trace in later iterations. FPS steadily decreases as N increases, showing diminishing returns when compaction is applied less frequently.
-In closed scenes, FPS changes minimally because most rays survive until the maximum depth. Compaction has little effect, and performing it less frequently has almost no benefit.
+In closed scenes, FPS changes minimally because most rays survive until the maximum depth. Compaction has little effect, and performing it less frequently has almost no benefit. 
+
+In conclusion, performing no stream compaction results in the worst performance for both open and closed scenes. The graphs of active rays and FPS clearly show that early compaction provides the greatest benefit, as more rays terminate in the first few bounces. For future optimization, we could vary the frequency of stream compaction, performing it more in the early bounces and less frequently in later bounces where few rays remain. This algorithmm could maximize FPS gains while minimizing unnecessary overhead.
 
 
 
