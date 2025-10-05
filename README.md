@@ -82,7 +82,7 @@ Future optimizations could include light sampling heuristics to limit the number
 
 ### Russian Roulette 
 
-Not all rays contribute equally to the final rendered image, so we can terminate certain rays early to save computation. This is especially useful for rays with low energy that have lost most of their contribution after multiple bounces. We use a uniform random number generator to probabilistically decide whether a ray should be terminated by setting its remaining bounces to zero. To preserve the accuracy of primary lighting, Russian Roulette is only applied after the first two bounces, as early bounces are typically more important for scene illumination. If a ray survives this probabilistic test, its color is scaled down to maintain energy conservation and to increase the chance of termination in subsequent iterations. This technique reduces computational cost while keeping the rendered result unbiased.
+Not all rays contribute equally to the final rendered image, so we can terminate certain rays early to save computation. This is especially useful for rays with low energy that have lost most of their contribution after multiple bounces. We use a uniform random number generator to probabilistically decide whether a ray should be terminated by setting its remaining bounces to zero. To preserve the accuracy of primary lighting, Russian Roulette is only applied after the first two bounces, as early bounces are typically more important for scene illumination. If a ray survives, its color is scaled down to increase the chance of termination in subsequent iterations. This technique reduces computational cost while preserving image quality. 
 
 ![PATH TRACER](img/noRR.png)
 
