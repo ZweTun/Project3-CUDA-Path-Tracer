@@ -62,6 +62,11 @@ Future optimizations could include light sampling heuristics to limit the number
 
 *Before Direct Lighting*
 
+
+&nbsp;
+&nbsp;
+
+
 ![PATH TRACER](img/DL.png)
 
 *After Direct Lighting*
